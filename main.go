@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/caarlos0/env/v6"
 	"github.com/twilio/twilio-go"
 	"net/http"
@@ -127,12 +128,15 @@ func parseResults(result AvailabilityResult) error {
 	if len(result.AvailabilityData) == 0 {
 		log.Warn("no results found")
 	} else {
+		log.Info("parsing reservation results")
 		for _, s := range result.AvailabilityData {
 			if len(s.AvailabilityList) == 0 {
 				log.WithFields(log.Fields{"date": s.Date}).Debug("no available reservations")
 			} else {
 				for _, r := range s.AvailabilityList {
 					log.WithFields(log.Fields{"result": r}).Debug("available reservation found")
+					var alertString = fmt.Sprintf("Reservation Found for %s. https://www.yelp.com%s", r.Isodate, r.FormAction)
+					sendSms(alertString)
 				}
 			}
 		}
@@ -173,7 +177,6 @@ func init() {
 
 func main() {
 	log.Info("starting app")
-	log.Info(cfg)
 	for {
 		err := findReservations()
 		if err != nil {
