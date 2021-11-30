@@ -1,4 +1,4 @@
-module yelp-reservations
+module github.com/Freakin/yelp-reservations
 
 go 1.17
 
