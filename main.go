@@ -66,7 +66,6 @@ var cfg Config
 func getDateString() string {
 	now := time.Now()
 	queryDate := now.AddDate(0, 0, cfg.YelpQueryDateOffset)
-	log.Info(queryDate)
 	return queryDate.Format("2006-01-02")
 }
 
