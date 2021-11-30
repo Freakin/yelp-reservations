@@ -48,4 +48,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/helloworld-golang:${{needs.tag.outputs.new_tag}}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/yelp-reservations:${{needs.tag.outputs.new_tag}}
