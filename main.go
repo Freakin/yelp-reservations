@@ -26,6 +26,7 @@ type Config struct {
 	YelpQueryPartySize   string `env:"YELP_QUERY_PARTY_SIZE" envDefault:"2"`
 	QueryIntervalSeconds int    `env:"QUERY_INTERVAL_SECONDS" envDefault:"60"`
 	RequestTimeout       int    `env:"TIMEOUT_SECONDS" envDefault:"30"`
+	ProxyUrl             string `env:"PROXY_URL"`
 }
 
 type AvailabilityResult struct {
@@ -84,6 +85,18 @@ func sendRequest() (AvailabilityResult, error) {
 	params.Set("days_after", cfg.YelpQueryDaysAfter)
 	params.Set("covers", cfg.YelpQueryPartySize)
 	client := &http.Client{}
+	//Use proxy if configured
+	if cfg.ProxyUrl != "" {
+		proxyUrl, err := url.Parse(cfg.ProxyUrl)
+		if err != nil {
+			log.WithFields(log.Fields{"proxyUrl": cfg.ProxyUrl}).Error("unable to parse proxyurl")
+		} else {
+			transport := &http.Transport{
+				Proxy: http.ProxyURL(proxyUrl),
+			}
+			client.Transport = transport
+		}
+	}
 	client.Timeout = time.Duration(cfg.RequestTimeout) * time.Second
 
 	req, err := http.NewRequest("GET", u.String(), nil)
