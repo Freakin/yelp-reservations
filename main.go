@@ -7,6 +7,7 @@ import (
 	"github.com/twilio/twilio-go"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -119,21 +120,32 @@ func sendRequest() (AvailabilityResult, error) {
 }
 
 func sendSms(message string) {
+	var destNums []string
+	//Split on semicolon for multiple destinations
+	if strings.Contains(cfg.TwilioDest, ";") {
+		destNums = strings.Split(cfg.TwilioDest, ";")
+	} else {
+		destNums = []string{cfg.TwilioDest}
+	}
+
 	client := twilio.NewRestClientWithParams(twilio.RestClientParams{
 		Username: cfg.TwilioSid,
 		Password: cfg.TwilioAuth,
 	})
-	params := &openapi.CreateMessageParams{}
-	params.SetTo(cfg.TwilioDest)
-	params.SetFrom(cfg.TwilioFrom)
-	params.SetBody(message)
-	resp, err := client.ApiV2010.CreateMessage(params)
-	if err != nil {
-		log.Error(err)
-		err = nil
-	} else {
-		log.WithFields(log.Fields{"sid": resp.Sid}).Debug("message sent to twilio")
+	for _, d := range destNums {
+		params := &openapi.CreateMessageParams{}
+		params.SetTo(d)
+		params.SetFrom(cfg.TwilioFrom)
+		params.SetBody(message)
+		resp, err := client.ApiV2010.CreateMessage(params)
+		if err != nil {
+			log.Error(err)
+			err = nil
+		} else {
+			log.WithFields(log.Fields{"sid": resp.Sid}).Debug("message sent to twilio")
+		}
 	}
+
 }
 
 func parseResults(result AvailabilityResult) error {
